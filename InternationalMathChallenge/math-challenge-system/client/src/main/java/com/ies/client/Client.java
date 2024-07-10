@@ -65,6 +65,18 @@ public class Client {
                     register(parts);
                 }
                 break;
+            case "login":
+                if (parts.length == 3) {
+                    login(parts[1], parts[2]);
+                } else if (parts.length == 2 && parts[1].contains("@")) {
+                    loginSchoolRepresentative(parts[1]);
+                } else {
+                    System.out.println("Invalid login format. Use: login username password (for regular users) or login email@school.com (for school representatives)");
+                }
+                break;
+            case "logout":
+                logout();
+                break;
             case "viewchallenges":
                 viewChallenges();
                 break;
@@ -93,6 +105,27 @@ public class Client {
         }
     }
 
+    private void login(String username, String password) throws IOException {
+        String response = sendMessage("LOGIN " + username + " " + password);
+        System.out.println(response);
+    }
+    
+    private void loginSchoolRepresentative(String email) throws IOException {
+        String response = sendMessage("LOGIN " + email);
+        System.out.println(response);
+        if (response.contains("password has been generated")) {
+            System.out.print("Please enter the password sent to your email: ");
+            String password = scanner.nextLine();
+            response = sendMessage("LOGIN " + email + " " + password);
+            System.out.println(response);
+        }
+    }
+
+    private void logout() throws IOException {
+        String response = sendMessage("LOGOUT");
+        System.out.println(response);
+    }
+
     private void register(String[] args) throws IOException {
         String message = String.join(" ", args);
         String response = sendMessage("REGISTER " + message);
@@ -110,10 +143,48 @@ public class Client {
     }
 
     private void attemptChallenge(String challengeNumber) throws IOException {
-        String response = sendMessage("ATTEMPT_CHALLENGE " + challengeNumber);
-        System.out.println(response);
-        // Here you would implement the logic to handle the challenge attempt
-        // This might involve a series of message exchanges with the server
+        try {
+            String response = sendMessage("ATTEMPT_CHALLENGE " + challengeNumber);
+            System.out.println(response);  
+            String startPrompt = in.readLine();
+            System.out.println(startPrompt);
+    
+            scanner.nextLine(); // Wait for user to press Enter
+            out.println("start");
+            out.flush();
+    
+            while (true) {
+                String questionInfo = in.readLine();
+                if (questionInfo == null || questionInfo.equals("END_OF_CHALLENGE")) {
+                    break;
+                }
+                System.out.println(questionInfo);
+    
+                String question = in.readLine();
+                System.out.println(question);
+    
+                String timeInfo = in.readLine();
+                System.out.println(timeInfo);
+    
+                if (timeInfo.equals("Time's up!")) {
+                    break;
+                }
+    
+                System.out.print("Your answer: ");
+                String answer = scanner.nextLine();
+                out.println(answer);
+                out.flush();
+    
+                String result = in.readLine();
+                System.out.println(result);
+            }
+    
+            String finalResult = in.readLine();
+            System.out.println(finalResult);
+        } catch (IOException e) {
+            System.err.println("Error during challenge attempt: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void viewApplicants() throws IOException {
@@ -128,18 +199,21 @@ public class Client {
 
     private void displayHelp() {
         System.out.println("Available commands:");
-        System.out.println("1. Register: Register username firstname lastname emailAddress date_of_birth school_registration_number image_file.png");
-        System.out.println("2. View Challenges: ViewChallenges");
-        System.out.println("3. Attempt Challenge: attemptChallenge challengeNumber");
-        System.out.println("4. View Applicants (for school representatives): viewApplicants");
-        System.out.println("5. Confirm Applicant (for school representatives): confirm yes/no username");
-        System.out.println("6. Exit: exit");
+        System.out.println("1. Login: login username password");
+        System.out.println("2. Register: Register username firstname lastname emailAddress date_of_birth school_registration_number image_file.png");
+        System.out.println("3. Logout: logout");
+        System.out.println("4. View Challenges: ViewChallenges");
+        System.out.println("5. Attempt Challenge (for participants only): attemptChallenge challengeNumber");
+        System.out.println("6. View Applicants (for school representatives only): viewApplicants");
+        System.out.println("7. Confirm Applicant (for school representatives only): confirm yes/no username");
+        System.out.println("8. Exit: exit");
     }
+    
 
     public static void main(String[] args) {
         Client client = new Client();
         try {
-            client.startConnection("localhost", 5000); // Adjust IP and port as needed
+            client.startConnection("localhost", 5000); 
             client.run();
         } catch (IOException e) {
             System.out.println("Error connecting to server: " + e.getMessage());
