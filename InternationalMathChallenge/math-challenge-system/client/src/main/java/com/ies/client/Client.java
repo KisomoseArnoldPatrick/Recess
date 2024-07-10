@@ -145,38 +145,33 @@ public class Client {
     private void attemptChallenge(String challengeNumber) throws IOException {
         try {
             String response = sendMessage("ATTEMPT_CHALLENGE " + challengeNumber);
-            System.out.println(response);  
+            System.out.println(response);
             String startPrompt = in.readLine();
             System.out.println(startPrompt);
     
+            System.out.println("Press Enter to start the challenge...");
             scanner.nextLine(); // Wait for user to press Enter
             out.println("start");
             out.flush();
     
             while (true) {
-                String questionInfo = in.readLine();
-                if (questionInfo == null || questionInfo.equals("END_OF_CHALLENGE")) {
+                String line = in.readLine();
+                if (line == null || line.equals("END_OF_CHALLENGE")) {
                     break;
                 }
-                System.out.println(questionInfo);
+                System.out.println(line);
     
-                String question = in.readLine();
-                System.out.println(question);
-    
-                String timeInfo = in.readLine();
-                System.out.println(timeInfo);
-    
-                if (timeInfo.equals("Time's up!")) {
-                    break;
+                if (line.startsWith("Enter your answer")) {
+                    System.out.print("Your answer: ");
+                    String answer = scanner.nextLine();
+                    out.println(answer);
+                    out.flush();
                 }
     
-                System.out.print("Your answer: ");
-                String answer = scanner.nextLine();
-                out.println(answer);
-                out.flush();
-    
-                String result = in.readLine();
-                System.out.println(result);
+                if (line.equals("Time's up!")) {
+                    System.out.println("Challenge ended due to time limit.");
+                    break;
+                }
             }
     
             String finalResult = in.readLine();

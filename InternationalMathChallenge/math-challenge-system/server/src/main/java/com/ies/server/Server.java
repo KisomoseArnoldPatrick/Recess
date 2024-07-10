@@ -41,6 +41,7 @@ public class Server {
         private String currentSchoolRepEmail;
         private String currentSchoolRepPassword;
         
+        
 
         public ClientHandler(Socket socket, Connection dbConnection) {
             this.clientSocket = socket;
@@ -151,7 +152,6 @@ private void clearInputBuffer() throws IOException {
             if (parts.length != 9) {
                 return "Invalid registration format";
             }
-
             String username = parts[2];
             String firstName = parts[3];
             String lastName = parts[4];
@@ -164,16 +164,13 @@ private void clearInputBuffer() throws IOException {
                 return "Invalid school registration number";
             }
             String imagePath = parts[8];
-
             
             if (isRejectedApplicant(email, schoolRegNo)) {
                 return "You have been previously rejected and cannot register under this school.";
             }
-
+            
             String password = generateRandomPassword();
-
-            String sql = "INSERT INTO Applicant (schoolRegNo, emailAddress, userName, imagePath, firstName, lastName, password, dateOfBirth, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending')";
-
+            String sql = "INSERT INTO Applicant (schoolRegNo, emailAddress, userName, imagePath, firstName, lastName, password, dateOfBirth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
                 pstmt.setInt(1, schoolRegNo);
                 pstmt.setString(2, email);
@@ -182,14 +179,12 @@ private void clearInputBuffer() throws IOException {
                 pstmt.setString(5, firstName);
                 pstmt.setString(6, lastName);
                 pstmt.setString(7, password);
-
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 java.util.Date utilDate = sdf.parse(dateOfBirth);
                 java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
                 pstmt.setDate(8, sqlDate);
-
+                
                 int affectedRows = pstmt.executeUpdate();
-
                 if (affectedRows > 0) {
                     return "User registered successfully. Your password is: " + password;
                 } else {
@@ -236,22 +231,24 @@ private void clearInputBuffer() throws IOException {
 
         private String loginSchoolRepresentative(String email, String password) {
             try {
-                // Check if the email exists in the School table
-                String checkEmailSql = "SELECT * FROM School WHERE emailAddress = ?";
-                try (PreparedStatement checkEmailStmt = dbConnection.prepareStatement(checkEmailSql)) {
-                    checkEmailStmt.setString(1, email);
-                    ResultSet emailRs = checkEmailStmt.executeQuery();
-                    if (!emailRs.next()) {
+                String sql = "SELECT schoolRegNo, schoolRepID FROM School WHERE emailAddress = ?";
+                try (PreparedStatement pstmt = dbConnection.prepareStatement(sql)) {
+                    pstmt.setString(1, email);
+                    ResultSet rs = pstmt.executeQuery();
+                    if (rs.next()) {
+                        this.schoolRegNo = rs.getInt("schoolRegNo");
+                        int schoolRepID = rs.getInt("schoolRepID");
+                        
+                        // Check if the provided email and password match the current session
+                        if (email.equals(this.currentSchoolRepEmail) && password.equals(this.currentSchoolRepPassword)) {
+                            this.isSchoolRepresentative = true;
+                            return "Login successful. Welcome, School Representative!";
+                        } else {
+                            return "Login failed. Invalid email or password.";
+                        }
+                    } else {
                         return "Login failed. Invalid email address.";
                     }
-                }
-        
-                // Check if the provided email and password match the current session
-                if (email.equals(this.currentSchoolRepEmail) && password.equals(this.currentSchoolRepPassword)) {
-                    this.isSchoolRepresentative = true;
-                    return "Login successful. Welcome, School Representative!";
-                } else {
-                    return "Login failed. Invalid email or password.";
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -264,6 +261,8 @@ private void clearInputBuffer() throws IOException {
                 participantID = 0;
                 isSchoolRepresentative = false;
                 schoolRegNo = 0;
+                currentSchoolRepEmail = null;
+                currentSchoolRepPassword = null;
                 return "Logged out successfully.";
             } else {
                 return "No user is currently logged in.";
@@ -381,22 +380,31 @@ private void clearInputBuffer() throws IOException {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime >= endTime) {
                     out.println("Time's up!");
+                    out.flush();
                     break;
                 }
         
                 long remainingTime = endTime - currentTime;
-                out.println(String.format("Question %d/10", i + 1));
+                out.println(String.format("Question %d/%d", i + 1, questions.size()));
                 out.println(question.get("question"));
                 out.println(String.format("Remaining time: %s", formatDuration(remainingTime)));
+                out.println("Enter your answer or '-' to skip:");
                 out.flush();
         
-                String userAnswer = in.readLine();
+                String userAnswer = readLineWithTimeout(remainingTime);
+                if (userAnswer == null) {
+                    out.println("Time's up for this question!");
+                    out.flush();
+                    userAnswer = "-";
+                }
+        
                 int questionNo = (int) question.get("questionNo");
                 int score = evaluateAnswer(questionNo, userAnswer);
                 storeAttemptQuestion(attemptID, questionNo, score, userAnswer);
                 totalScore += score;
                 totalMarks += (int) question.get("marks");
         
+                out.println("Answer recorded. Moving to next question...");
                 out.flush();
             }
         
@@ -407,6 +415,27 @@ private void clearInputBuffer() throws IOException {
             saveAttemptResult(attemptID, startTime, totalScore, percentageMark);
         
             return String.format("Challenge completed. Your score: %d (%.2f%%)", totalScore, percentageMark);
+        }
+        
+        private String readLineWithTimeout(long timeoutMillis) throws IOException {
+            long startTime = System.currentTimeMillis();
+            StringBuilder input = new StringBuilder();
+            while (System.currentTimeMillis() - startTime < timeoutMillis) {
+                if (in.ready()) {
+                    int c = in.read();
+                    if (c == -1 || c == '\n') {
+                        break;
+                    }
+                    input.append((char) c);
+                }
+                try {
+                    Thread.sleep(100); // Small delay to prevent busy-waiting
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }
+            return input.length() > 0 ? input.toString() : null;
         }
 
         private boolean hasExceededAttempts(int challengeNo) throws SQLException {
@@ -508,10 +537,10 @@ private void clearInputBuffer() throws IOException {
         }
         
         private String viewApplicants() {
-            if (!isAuthenticated() || !isSchoolRepresentative) {
+            if (!isSchoolRepresentative) {
                 return "You don't have permission to view applicants.";
             }
-            
+        
             String sql = "SELECT applicantID, userName, firstName, lastName, emailAddress, dateOfBirth FROM Applicant WHERE schoolRegNo = ?";
             StringBuilder result = new StringBuilder();
             result.append("List of Pending Applicants:\n");
@@ -543,7 +572,7 @@ private void clearInputBuffer() throws IOException {
         }
 
         private String confirmApplicant(String decision, String username) {
-            if (!isAuthenticated() || !isSchoolRepresentative) {
+            if (!isSchoolRepresentative) {
                 return "You don't have permission to confirm applicants.";
             }
         
@@ -565,26 +594,46 @@ private void clearInputBuffer() throws IOException {
                         return "No applicant found with username: " + username;
                     }
         
+                    int applicantID = rs.getInt("applicantID");
+        
                     // Insert into target table
-                    String insertSql = "INSERT INTO " + targetTable + " (schoolRegNo, emailAddress, userName, imagePath, firstName, lastName, password, dateOfBirth) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    String insertSql;
+                    if (isApproved) {
+                        insertSql = "INSERT INTO Participant (applicantID, firstName, lastName, emailAddress, dateOfBirth, schoolRegNo, userName, imagePath, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    } else {
+                        insertSql = "INSERT INTO Rejected (schoolRegNo, emailAddress, applicantID, userName, imagePath, firstName, lastName, password, dateOfBirth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    }
+        
                     try (PreparedStatement insertStmt = dbConnection.prepareStatement(insertSql)) {
-                        insertStmt.setInt(1, rs.getInt("schoolRegNo"));
-                        insertStmt.setString(2, rs.getString("emailAddress"));
-                        insertStmt.setString(3, rs.getString("userName"));
-                        insertStmt.setString(4, rs.getString("imagePath"));
-                        insertStmt.setString(5, rs.getString("firstName"));
-                        insertStmt.setString(6, rs.getString("lastName"));
-                        insertStmt.setString(7, rs.getString("password"));
-                        insertStmt.setDate(8, rs.getDate("dateOfBirth"));
+                        if (isApproved) {
+                            insertStmt.setInt(1, applicantID);
+                            insertStmt.setString(2, rs.getString("firstName"));
+                            insertStmt.setString(3, rs.getString("lastName"));
+                            insertStmt.setString(4, rs.getString("emailAddress"));
+                            insertStmt.setDate(5, rs.getDate("dateOfBirth"));
+                            insertStmt.setInt(6, rs.getInt("schoolRegNo"));
+                            insertStmt.setString(7, rs.getString("userName"));
+                            insertStmt.setString(8, rs.getString("imagePath"));
+                            insertStmt.setString(9, rs.getString("password"));
+                        } else {
+                            insertStmt.setInt(1, rs.getInt("schoolRegNo"));
+                            insertStmt.setString(2, rs.getString("emailAddress"));
+                            insertStmt.setInt(3, applicantID);
+                            insertStmt.setString(4, rs.getString("userName"));
+                            insertStmt.setString(5, rs.getString("imagePath"));
+                            insertStmt.setString(6, rs.getString("firstName"));
+                            insertStmt.setString(7, rs.getString("lastName"));
+                            insertStmt.setString(8, rs.getString("password"));
+                            insertStmt.setDate(9, rs.getDate("dateOfBirth"));
+                        }
         
                         insertStmt.executeUpdate();
                     }
         
                     // Delete from Applicant table
-                    String deleteSql = "DELETE FROM Applicant WHERE userName = ? AND schoolRegNo = ?";
+                    String deleteSql = "DELETE FROM Applicant WHERE applicantID = ?";
                     try (PreparedStatement deleteStmt = dbConnection.prepareStatement(deleteSql)) {
-                        deleteStmt.setString(1, username);
-                        deleteStmt.setInt(2, schoolRegNo);
+                        deleteStmt.setInt(1, applicantID);
                         deleteStmt.executeUpdate();
                     }
         
