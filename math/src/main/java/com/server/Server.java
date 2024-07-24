@@ -17,12 +17,29 @@ class Server {
 		conn =  DriverManager.getConnection("jdbc:mysql://localhost:3306/recessdb","root","");
 		System.out.println("Database Connection success");
 	}
-	static void handleClient(Socket soc) {
+
+	 // Define a Runnable implementation to handle client requests
+	 static class ClientHandler implements Runnable {
+        private final Socket socket;
+
+        public ClientHandler(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+            handleClient();
+        }
+    
+
+	void handleClient() {
 		String response;
+		
+
 		try(
 				// Initialize input and output streams for this client
-			BufferedReader	br = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-			PrintWriter	pw = new PrintWriter(soc.getOutputStream(), true)
+			BufferedReader	br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			PrintWriter	pw = new PrintWriter(socket.getOutputStream(), true)
 				){
 			String readData = br.readLine();
 			/*Splitting the input into separate components 
@@ -31,16 +48,28 @@ class Server {
 			 * +: This quantifier means “one or more occurrences.”
 			 */
 			String[] Details = readData.split("\\s+");
+
+			if (Details[0].equalsIgnoreCase("login")) {
+                String userName = Details[1];
+                String password = Details[2];
+                String[] loginResponse = Login.checkLoginDetails(userName, password);
+                response = loginResponse[0];
+
+                if (response.startsWith("Successful login as participant")) {
+					pw.println(response + " " + loginResponse[1]); // Include participantID
+        
+                } else if (response.startsWith("Successful login as school representative")) {
+					pw.println(response + " " + loginResponse[1]); // Include schRegNo
+                }
+				else{
+					pw.println(response);
+				}
+            }
+
 			switch(Details[0].toLowerCase()) {
-			case "login":
-				String userName = Details[1];
-	            String password = Details[2];
-	            response = Login.checkDetails(userName,password);
-	            pw.println(response);
-				break;
-				
+			
 			case "register":
-				response = Register.checkDetails(readData);
+				response = Register.registerPupil(readData);
 				pw.println(response);
 				break;
 				
@@ -50,7 +79,8 @@ class Server {
 				break;
 				
 			case "viewapplicants":
-				response = ViewApplicant.viewApplicants();
+				int schRegNo = Integer.parseInt(Details[1]);
+				response = ViewApplicant.viewApplicants(schRegNo);
 				pw.println(response);
 				break;
 				
@@ -68,7 +98,10 @@ class Server {
 				}
 				break;
 			case "attemptchallenge":
-				// Add your implementation for attemptChallenge here
+			    int challengeNo = Integer.parseInt(Details[1]);
+				int participantID = Integer.parseInt(Details[2]);
+			   response = AttemptChallenge.attemptChallenge(challengeNo,pw,br,participantID);
+			   pw.println(response);
 				break;
 				
 				
@@ -79,6 +112,7 @@ class Server {
 	            e.printStackTrace();
 			}
 	}
+}
 	
 	public static void main(String[] args) {
 		
@@ -93,12 +127,17 @@ class Server {
 				 *   processes its request and then goes back to listening for more connections.
 				 */
 				while(true) {
-					try (Socket soc = ss.accept()){
-						System.out.println("Client connected");
-						handleClient(soc);
-					} catch(IOException e) {
+					try{
+						Socket soc = ss.accept();
+							System.out.println("Client connected");
+							// Start a new thread for each client
+							ClientHandler clientHandler = new ClientHandler(soc);
+							Thread clientThread = new Thread(clientHandler);
+							clientThread.start();
+					}catch(IOException e) {
 						e.printStackTrace();
 					}
+					
 				}
 			}
 		}catch(IOException | SQLException | ClassNotFoundException e) {
