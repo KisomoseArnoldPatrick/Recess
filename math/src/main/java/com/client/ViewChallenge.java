@@ -5,25 +5,30 @@ import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 class ViewChallenge {
+	static Scanner scan = new Scanner(System.in);
 	
-	static void viewChallenges(int participantID) throws UnknownHostException, IOException {
+	static void viewChallenges() throws UnknownHostException, IOException {
 			while(true) {
 				System.out.println("To see valid challenges type \"viewChallenges\"");
-				String input = Client.scan.nextLine();
+				String input = scan.nextLine();
 				
 				if (input.equals("viewChallenges")) {
 					String response = Register.sendDetails(input);
-					handleResponse(response, participantID);
+					printChallenges(response);
+					attemptChallenge();
 					break; // Exit the loop if the correct input is provided
 				} else {
 					System.out.println("Invalid input. Please type \"viewChallenges\" to proceed.");
 				}
 			}
+
+		
 	}
 	
 	static void printChallenges(String jsonResponse) {
@@ -35,19 +40,23 @@ class ViewChallenge {
 	            System.out.println("Challenge details: " + challenge);
 	        }
 	}
-	
-	static  void handleResponse(String response, int participantID) throws UnknownHostException, IOException{
-		switch(response){
-			case "No challenges available":
-				System.out.println("No challenges available");
-				break;
-
-			default:
-				printChallenges(response);
-				AttemptChallenge attemptChallenge = new AttemptChallenge();
-				attemptChallenge.attemptChallenge(participantID);
-				break;
+	static void attemptChallenge() throws UnknownHostException, IOException {
+		while(true) { 
+			System.out.println();
+			System.out.println("To attempt a challenge type \"attemptChallenge challengeNumber\"");
+			String input  = scan.nextLine();
+			String[] Details = input.split("\\s+");
+			
+			if(Details.length==2 && Register.isInteger(Details[1])) {
+				String response = Register.sendDetails(input);
+				System.out.println(response);
+				break; // Exit the loop if the correct input is provided
+			}
+			else {
+				System.out.println("Invalid input. Please type \"attemptChallenge challengeNumber\" to proceed.");
+			}
 		}
+		
 	}
 
 }

@@ -8,20 +8,20 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 
 class Login {
 
-    // checkLoginDetails() handles the login part
-	static String[] checkLoginDetails(String userName, String password) throws SQLException {
-		String sql = "SELECT password, participantID FROM Participant WHERE userName = ?";
+    // checkDetails() handles the login part
+	static String checkDetails(String userName, String password) throws SQLException {
+		String sql = "SELECT password FROM Participant WHERE userName = ?";
 		try(PreparedStatement stmt = Server.conn.prepareStatement(sql)){
 			stmt.setString(1, userName);
 			try(ResultSet rs = stmt.executeQuery()){
 				if(!rs.next()) {
 					 // ResultSet is empty, check in SchoolRepresentative table
-					String sql2 = "SELECT password, schoolRegNo FROM School WHERE userName = ?";
+					String sql2 = "SELECT password FROM SchoolRepresentative WHERE userName = ?";
 					try(PreparedStatement stmt2 = Server.conn.prepareStatement(sql2)){
 						stmt2.setString(1, userName);
 						try(ResultSet rs2 = stmt2.executeQuery()){
 							if(!rs2.next()) {
-								return new String[] {"Wrong password or username", null};
+								return "Wrong password or username";
 							}
 							else {
 				                    // Verify the password
@@ -29,10 +29,9 @@ class Login {
 				                //verify the provided plaintext password against the stored hash
 				                BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), storedHash);
 				                if (result.verified) {
-									int schRegNo = rs2.getInt("schoolRegNo");
-				                    return new String[] {"Successful login as school representative", String.valueOf(schRegNo)};
+				                    return "Successful login as school representative";
 				                } else {
-				                    return new String[] {"Wrong password or username", null};
+				                    return "Wrong password or username";
 				                }
 				                } 
 							}
@@ -44,10 +43,9 @@ class Login {
 					  String storedHash = rs.getString("password");
 					  BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), storedHash);
 					  if (result.verified) {
-						int participantID = rs.getInt("participantID");
-						  return new String[] {"Successful login as participant", String.valueOf(participantID)};
+						  return "Successful login as participant";
 					  } else {
-						  return new String[] {"Wrong password or username", null};
+						  return "Wrong password or username";
 					  }
 	                } 
 			}

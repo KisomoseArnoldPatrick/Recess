@@ -6,27 +6,27 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 class Register {
+
+    
 	
-	//registerPupil() handles the registration part
-	static String registerPupil(String registrationDetails) throws SQLException, IOException {
+	//checkDetails() handles the registration part
+	static String checkDetails(String registrationDetails) throws SQLException, IOException {
 		String[] Details = registrationDetails.split("\\s+");
 		String userName =Details[1];
 		String firstName =Details[2];
 		String lastName =Details[3];
 		String emailAddress =Details[4];
 		String dateOfBirth =Details[5];
-		int schRegNo = Integer.parseInt(Details[6]);
+		String schRegNo =Details[6];
 		String password = Details[7];
 		String imagePath =Details[8];
-		String sql = "SELECT schoolRegNo, repName, emailAddress,schoolName FROM School WHERE schoolRegNo = ? ";
+		String sql = "SELECT schoolRegNo, repName, emailAddress,schoolName FROM SchoolRepresentative WHERE schoolRegNo = ? ";
 		try(PreparedStatement stmt = Server.conn.prepareStatement(sql)){
-			stmt.setInt(1,schRegNo);
+			stmt.setString(1,schRegNo);
 			try(ResultSet rs = stmt.executeQuery()){
 				if(!rs.next()) {
 					return "Your school is not registered";
@@ -37,7 +37,7 @@ class Register {
 					String sql2 = "SELECT rejectedID FROM Rejected where emailAddress = ? AND schoolRegNo = ?";
 					try(PreparedStatement stmt2 = Server.conn.prepareStatement(sql2)){
 						stmt2.setString(1, emailAddress);
-						stmt2.setInt(2, schRegNo);
+						stmt2.setString(2, schRegNo);
 						try(ResultSet rs2 = stmt2.executeQuery()){
 							if(!rs2.next()) {
 								//Result set  empty
@@ -63,21 +63,18 @@ class Register {
 
 															// Hash the password using BCrypt
 													        String hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray());
-
-															DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // Define the date format
-															LocalDate date = LocalDate.parse(dateOfBirth, formatter); // Parse the string into a LocalDate
 													      
 													        String sql5 = "INSERT INTO Applicant(schoolRegNo,emailAddress,userName,image,"
 																	+ "firstName,lastName,password,dateOfBirth) VALUES(?,?,?,?,?,?,?,?)";
 															 try(PreparedStatement stmt5 = Server.conn.prepareStatement(sql5)){
-																 stmt5.setInt(1,schRegNo);
+																 stmt5.setString(1,schRegNo);
 																 stmt5.setString(2,emailAddress);
 																 stmt5.setString(3,userName);
 																 stmt5.setBytes(4,imageBytes);
 																 stmt5.setString(5,firstName);
 																 stmt5.setString(6,lastName);
 																 stmt5.setString(7,hashedPassword);
-																 stmt5.setDate(8,java.sql.Date.valueOf(date));// Convert LocalDate to java.sql.Date
+																 stmt5.setString(8,dateOfBirth);
 																 stmt5.executeUpdate();
 
 																 String schName = rs.getString("schoolName");

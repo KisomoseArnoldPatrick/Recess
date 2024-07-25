@@ -12,34 +12,26 @@ import com.google.gson.Gson;
 
 class ViewApplicant {
 
-    static String viewApplicants(int schRegNo) throws SQLException {
-		String sql = "SELECT schoolRegNo,emailAddress,userName,firstName,lastName,dateOfBirth FROM Applicant WHERE schoolRegNo = ?";
+    static String viewApplicants() throws SQLException {
+		String sql = "SELECT schoolRegNo,emailAddress,userName,firstName,lastName,dateOfBirth FROM Applicant";
 		 List<Map<String, Object>> applicantsList = new ArrayList<>();
-		try(PreparedStatement stmt = Server.conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)){
-			stmt.setInt(1, schRegNo);
-			try(ResultSet rs = stmt.executeQuery()){
-				if(!rs.next()) {
-					return "No applicants available";
-				}
-				else {
-					rs.beforeFirst(); // Move the cursor before the first row
-					while (rs.next()) {
-			            Map<String, Object> applicant = new HashMap<>();
-			            applicant.put("schoolRegNo", rs.getInt("schoolRegNo"));
-			            applicant.put("emailAddress", rs.getString("emailAddress"));
-			            applicant.put("userName", rs.getString("userName"));
-			            applicant.put("firstName", rs.getString("firstName"));
-			            applicant.put("lastName", rs.getString("lastName"));
-			            applicant.put("dateOfBirth", rs.getDate("dateOfBirth"));
-			            applicantsList.add(applicant);
-					}
-				}
+		try(PreparedStatement stmt = Server.conn.prepareStatement(sql);
+				ResultSet rs = stmt.executeQuery()){
+			
+			  while (rs.next()) {
+		            Map<String, Object> applicant = new HashMap<>();
+		            applicant.put("schoolRegNo", rs.getString("schoolRegNo"));
+		            applicant.put("emailAddress", rs.getString("emailAddress"));
+		            applicant.put("userName", rs.getString("userName"));
+		            applicant.put("firstName", rs.getString("firstName"));
+		            applicant.put("lastName", rs.getString("lastName"));
+		            applicant.put("dateOfBirth", rs.getDate("dateOfBirth"));
+		            applicantsList.add(applicant);
+			  }
 				
-			}
-
 		}
 
-						// Debug statements to check the size and contents of applicantsList
+        // Debug statements to check the size and contents of applicantsList
 	    System.out.println("Number of applicants fetched: " + applicantsList.size());
 	    for (Map<String, Object> applicant : applicantsList) {
 	        System.out.println("Applicant details: " + applicant);
@@ -47,12 +39,13 @@ class ViewApplicant {
 			
 		 Gson gson = new Gson();
 		    return gson.toJson(applicantsList);
-				
-		}
+	}
 
+    	
+	
 	//confirm yes username
 	static String confirmYes(String userName) throws SQLException {
-		String sql = "SELECT firstName, lastName, emailAddress FROM Applicant WHERE userName =?";
+		String sql = "SELECT * FROM Applicant WHERE userName =?";
 		try(PreparedStatement stmt = Server.conn.prepareStatement(sql)){
 			stmt.setString(1, userName);
 			try(ResultSet rs = stmt.executeQuery()){
@@ -90,7 +83,7 @@ class ViewApplicant {
 	}
 	//confirm no username
 	static String confirmNo(String userName) throws SQLException {
-		String sql = "SELECT firstName, lastName, emailAddress FROM Applicant WHERE userName =?";
+		String sql = "SELECT * FROM Applicant WHERE userName =?";
 		try(PreparedStatement stmt = Server.conn.prepareStatement(sql)){
 			stmt.setString(1, userName);
 			try(ResultSet rs = stmt.executeQuery()){

@@ -8,7 +8,10 @@ class Login {
 		String[] Details = input.split("\\s+");
 		if(Details.length == 3) {
 			String response = Register.sendDetails(input);
-			handleResponse(response);// Call handleResponse() after receiving the response
+			System.out.println(response);
+			handleResponse(response);// Call handleResponse after receiving the response
+			
+		
 	}
 		else {
 			System.out.println("Invalid login details. Please provide username and password.");
@@ -17,43 +20,19 @@ class Login {
 	}
 	
 	static void handleResponse(String response) throws UnknownHostException, IOException {
-		if(response.contains("representative")) {
-			int lastSpaceIndex = response.lastIndexOf(' ');
-					if (lastSpaceIndex != -1) {
-						String messagePart = response.substring(0, lastSpaceIndex);
-						String numberPart = response.substring(lastSpaceIndex + 1);
-						int schRegNo = Integer.parseInt(numberPart);
-						System.out.println(messagePart);
-						ViewApplicant.viewApplicants(schRegNo);
-					}
-		}
-
-		else if(response.contains("participant")) {
-			int lastSpaceIndex2 = response.lastIndexOf(' ');
-					if (lastSpaceIndex2 != -1) {
-						String messagePart = response.substring(0, lastSpaceIndex2);
-						String numberPart = response.substring(lastSpaceIndex2 + 1);
-						int participantID = Integer.parseInt(numberPart);
-						System.out.println(messagePart);
-						ViewChallenge.viewChallenges(participantID);
-					}
-		}
-		else {
-			System.out.println(response);
-			retryLogin();
-
-		}
-	
+            switch (response) {
+                case "Successful login as school representative":
+                    ViewApplicant.viewApplicants();
+                    break;
+                case "Successful login as participant":
+                    ViewChallenge.viewChallenges();
+                    break;
+                default:
+                    //Wrong password or username
+                    Client.start();//Call Client.start() to prompt the user again
+                    break;
+            }
 	}
-
-	
-           
-                    
-               
-
-	static void retryLogin() throws UnknownHostException, IOException {
-        Client.start(); // Call Client.start() to prompt the user again
-    }
 		
 
 }
