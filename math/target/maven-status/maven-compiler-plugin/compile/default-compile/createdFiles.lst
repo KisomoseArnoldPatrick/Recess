@@ -1,0 +1,17 @@
+com\client\Client.class
+com\client\Login.class
+com\client\Email$1.class
+com\server\Login.class
+com\server\Register.class
+com\client\ViewApplicant$1.class
+com\server\Server.class
+com\client\ViewApplicant.class
+com\server\ViewChallenge.class
+com\client\Email.class
+com\server\Email.class
+com\server\Email$1.class
+com\client\Register.class
+com\client\ViewChallenge$1.class
+com\server\SchoolRep.class
+com\client\ViewChallenge.class
+com\server\ViewApplicant.class
