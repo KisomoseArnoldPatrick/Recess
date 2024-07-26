@@ -1,0 +1,323 @@
+@extends("layouts.dash")
+@section("content")
+
+
+<!-- start page title -->
+<div class="row"> 
+                            <div class="col-12">
+                                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+
+
+                                    <div class="page-title-right">
+                                        <ol class="breadcrumb m-0">
+                                            <li class="breadcrumb-item"><a href="javascript: void(0);">MATH CHALLENGE</a></li>
+                                            <li class="breadcrumb-item active">Dashboard</li>
+                                        </ol>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end page title -->
+
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                @php
+                                                    $schools = App\Models\Schools::all();
+                                                @endphp
+                                                <p class="text-truncate font-size-14 mb-2">Schools</p>
+                                                <h4 class="mb-2">{{count($schools)}}</h4>
+                                                <p class="text-muted mb-0"><span class="text-success fw-bold font-size-12 me-2"><i class="ri-arrow-right-up-line me-1 align-middle"></i>9.23%</span>from previous period</p>
+                                            </div>
+                                            <div class="avatar-sm">
+                                                <span class="avatar-title bg-light text-primary rounded-3">
+                                                    <i class="ri-shopping-cart-2-line font-size-24"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div><!-- end cardbody -->
+                                </div><!-- end card -->
+                            </div><!-- end col -->
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                @php
+                                                    $pupils = App\Models\pupils::all();
+                                                @endphp
+                                                <p class="text-truncate font-size-14 mb-2">Registered Pupils</p>
+                                                <h4 class="mb-2">{{count($pupils)}}</h4>
+                                                <p class="text-muted mb-0"><span class="text-danger fw-bold font-size-12 me-2"><i class="ri-arrow-right-down-line me-1 align-middle"></i>1.09%</span>from previous period</p>
+                                            </div>
+                                            <div class="avatar-sm">
+                                                <span class="avatar-title bg-light text-success rounded-3">
+                                                    <i class="mdi mdi-currency-usd font-size-24"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div><!-- end cardbody -->
+                                </div><!-- end card -->
+                            </div><!-- end col -->
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <p class="text-truncate font-size-14 mb-2">Challenges</p>
+                                                <h4 class="mb-2">8246</h4>
+                                                <p class="text-muted mb-0"><span class="text-success fw-bold font-size-12 me-2"><i class="ri-arrow-right-up-line me-1 align-middle"></i>16.2%</span>from previous period</p>
+                                            </div>
+                                            <div class="avatar-sm">
+                                                <span class="avatar-title bg-light text-primary rounded-3">
+                                                    <i class="ri-user-3-line font-size-24"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div><!-- end cardbody -->
+                                </div><!-- end card -->
+                            </div><!-- end col -->
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <p class="text-truncate font-size-14 mb-2">Uploaded Questions</p>
+                                                <h4 class="mb-2">29670</h4>
+                                                <p class="text-muted mb-0"><span class="text-success fw-bold font-size-12 me-2"><i class="ri-arrow-right-up-line me-1 align-middle"></i>11.7%</span>from previous period</p>
+                                            </div>
+                                            <div class="avatar-sm">
+                                                <span class="avatar-title bg-light text-success rounded-3">
+                                                    <i class="mdi mdi-currency-btc font-size-24"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div><!-- end cardbody -->
+                                </div><!-- end card -->
+                            </div><!-- end col -->
+                        </div><!-- end row -->
+
+                        <div class="row">
+
+                        </div>
+                        <!-- end row -->
+
+                        <div class="row">
+                            <div class="col-xl-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="dropdown float-end">
+                                            <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="mdi mdi-dots-vertical"></i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <!-- item-->
+                                                <a href="javascript:void(0);" class="dropdown-item">Sales Report</a>
+                                                <!-- item-->
+                                                <a href="javascript:void(0);" class="dropdown-item">Export Report</a>
+                                                <!-- item-->
+                                                <a href="javascript:void(0);" class="dropdown-item">Profit</a>
+                                                <!-- item-->
+                                                <a href="javascript:void(0);" class="dropdown-item">Action</a>
+                                            </div>
+                                        </div>
+
+                                        <h4 class="card-title mb-4">Latest Results</h4>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-centered mb-0 align-middle table-hover table-nowrap">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Status</th>
+                                                        <th>Age</th>
+                                                        <th>Start date</th>
+                                                        <th style="width: 120px;">Score</th>
+                                                    </tr>
+                                                </thead><!-- end thead -->
+                                                <tbody>
+                                                    <tr>
+                                                        <td><h6 class="mb-0">Charles Casey</h6></td>
+                                                        <td>1st</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-success align-middle me-2"></i>Active</div>
+                                                        </td>
+                                                        <td>
+                                                            23
+                                                        </td>
+                                                        <td>
+                                                            04 Apr, 2021
+                                                        </td>
+                                                        <td>98</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Alex Adams</h6></td>
+                                                        <td>2nd</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-warning align-middle me-2"></i>Deactive</div>
+                                                        </td>
+                                                        <td>
+                                                            28
+                                                        </td>
+                                                        <td>
+                                                            01 Aug, 2021
+                                                        </td>
+                                                        <td>95</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Prezy Kelsey</h6></td>
+                                                        <td>3rd</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-success align-middle me-2"></i>Active</div>
+                                                        </td>
+                                                        <td>
+                                                            35
+                                                        </td>
+                                                        <td>
+                                                            15 Jun, 2021
+                                                        </td>
+                                                        <td>91</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Ruhi Fancher</h6></td>
+                                                        <td>4th</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-success align-middle me-2"></i>Active</div>
+                                                        </td>
+                                                        <td>
+                                                            25
+                                                        </td>
+                                                        <td>
+                                                            01 March, 2021
+                                                        </td>
+                                                        <td>89</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Juliet Pineda</h6></td>
+                                                        <td>5th</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-success align-middle me-2"></i>Active</div>
+                                                        </td>
+                                                        <td>
+                                                            38
+                                                        </td>
+                                                        <td>
+                                                            01 Jan, 2021
+                                                        </td>
+                                                        <td>85</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Den Simpson</h6></td>
+                                                        <td>6th</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-warning align-middle me-2"></i>Deactive</div>
+                                                        </td>
+                                                        <td>
+                                                            21
+                                                        </td>
+                                                        <td>
+                                                            01 Sep, 2021
+                                                        </td>
+                                                        <td>81</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                     <tr>
+                                                        <td><h6 class="mb-0">Mahek Torres</h6></td>
+                                                        <td>7th</td>
+                                                        <td>
+                                                            <div class="font-size-13"><i class="ri-checkbox-blank-circle-fill font-size-10 text-success align-middle me-2"></i>Active</div>
+                                                        </td>
+                                                        <td>
+                                                            32
+                                                        </td>
+                                                        <td>
+                                                            20 May, 2021
+                                                        </td>
+                                                        <td>77</td>
+                                                    </tr>
+                                                     <!-- end -->
+                                                </tbody><!-- end tbody -->
+                                            </table> <!-- end table -->
+                                        </div>
+                                    </div><!-- end card -->
+                                </div><!-- end card -->
+                            </div>
+                            <!-- end col -->
+                            <div class="col-xl-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="float-end">
+                                            <select class="form-select shadow-none form-select-sm">
+                                                <option selected>Apr</option>
+                                                <option value="1">Mar</option>
+                                                <option value="2">Feb</option>
+                                                <option value="3">Jan</option>
+                                            </select>
+                                        </div>
+                                        <h4 class="card-title mb-4"> STATISTICS</h4>
+
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>3475</h5>
+                                                    <p class="mb-2 text-truncate">CORRECTLY ANSWERED</p>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>458</h5>
+                                                    <p class="mb-2 text-truncate">Incomplete challenges</p>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>9062</h5>
+                                                    <p class="mb-2 text-truncate">Best performing schools</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>9062</h5>
+                                                    <p class="mb-2 text-truncate">Worst performing schools</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>9062</h5>
+                                                    <p class="mb-2 text-truncate">School Ranking</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="text-center mt-4">
+                                                    <h5>9062</h5>
+                                                    <p class="mb-2 text-truncate">School Ranking</p>
+                                                </div>
+                                            </div>
+                                            <!-- end col -->
+                                        </div>
+                                        <!-- end row -->
+
+                                        <div class="mt-4">
+                                            <div id="donut-chart" class="apex-charts"></div>
+                                        </div>
+                                    </div>
+                                </div><!-- end card -->
+                            </div><!-- end col -->
+                        </div>
+                        <!-- end row -->
+                        
+                <!-- End Page-content -->
+
+@endsection
